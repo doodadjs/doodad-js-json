@@ -19,5 +19,8 @@
     "url": "https://github.com/doodadjs/doodad-js-json/issues",
     "email": "doodadjs@gmail.com"
   },
-  "tonicExampleFilename": "tonic.js"
+  "tonicExampleFilename": "tonic.js",
+  "optionalDependencies": {
+    "jsonparse": "^1.2.0"
+  },
 }
