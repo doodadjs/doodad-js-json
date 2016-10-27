@@ -1,8 +1,7 @@
 {
   "name": "doodad-js-json",
-  "version": "0.1.0",
-  "stage": "a",
   "description": "JSON Parser",
+  "version": "0.0.0",
   "files": [
 	"tonic.js"
   ],
@@ -19,8 +18,5 @@
     "url": "https://github.com/doodadjs/doodad-js-json/issues",
     "email": "doodadjs@gmail.com"
   },
-  "tonicExampleFilename": "tonic.js",
-  "optionalDependencies": {
-    "jsonparse": "^1.2.0"
-  },
+  "tonicExampleFilename": "tonic.js"
 }
