@@ -83,9 +83,10 @@ module.exports = {
 					__jsonparserOnValue: doodad.PROTECTED(function __jsonparserOnValue(/*optional*/value) {
 						var parser = this.__jsonparser;
 						
-						// Check MaxSafeInteger for "level"
+						// TODO: Check MaxSafeInteger for "level"
+						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 						
-						var chunk = {
+						var data = {
 							value: value,
 							isOpenClose: (arguments.length === 0),
 							mode: this.__jsonMode,
@@ -93,9 +94,9 @@ module.exports = {
 							valueOf: function() { return this; },
 							Modes: types.getType(this).$Modes,
 						};
-						chunk.raw = chunk;
+						data.raw = data;
 						
-						this.push(chunk, {output: false});
+						this.push(data, {noEvents: true});
 					}),
 
 					//create: doodad.OVERRIDE(function create(/*optional*/options) {
@@ -108,12 +109,12 @@ module.exports = {
 						var JsonParser = ioJsonLoader.getParser();
 						var type = types.getType(this);
 						this.__jsonparser = new JsonParser({
-							onError: new doodad.Callback(this, function(err) {
+							onError: doodad.Callback(this, function(err) {
 								//this.onError(new doodad.ErrorEvent(err));
 								throw err;
 							}, true),
 							
-							onStartObject: new doodad.Callback(this, function() {
+							onStartObject: doodad.Callback(this, function() {
 								this.__jsonLevel++;
 								// Check MaxSafeInteger for "__jsonModeStack.length"
 								this.__jsonModeStack.push(this.__jsonMode);
@@ -122,7 +123,7 @@ module.exports = {
 								this.__jsonparserOnValue();
 							}, true),
 							
-							onEndObject: new doodad.Callback(this, function() {
+							onEndObject: doodad.Callback(this, function() {
 								this.__jsonLevel--;
 								this.__jsonMode = type.$Modes.Object;
 								this.__jsonWaitKey = false;
@@ -130,7 +131,7 @@ module.exports = {
 								this.__jsonMode = this.__jsonModeStack.pop();
 							}, true),
 							
-							onStartArray: new doodad.Callback(this, function() {
+							onStartArray: doodad.Callback(this, function() {
 								this.__jsonLevel++;
 								// Check MaxSafeInteger for "__jsonModeStack.length"
 								this.__jsonModeStack.push(this.__jsonMode);
@@ -139,7 +140,7 @@ module.exports = {
 								this.__jsonparserOnValue();
 							}, true),
 							
-							onEndArray: new doodad.Callback(this, function() {
+							onEndArray: doodad.Callback(this, function() {
 								this.__jsonLevel--;
 								this.__jsonMode = type.$Modes.Array;
 								this.__jsonWaitKey = false;
@@ -147,7 +148,7 @@ module.exports = {
 								this.__jsonMode = this.__jsonModeStack.pop();
 							}, true),
 							
-							onColon: new doodad.Callback(this, function() {
+							onColon: doodad.Callback(this, function() {
 								if (this.__jsonWaitKey && (this.__jsonMode === type.$Modes.Object)) {
 									this.__jsonWaitKey = false;
 								} else {
@@ -156,7 +157,7 @@ module.exports = {
 								};
 							}, true),
 							
-							onComma: new doodad.Callback(this, function() {
+							onComma: doodad.Callback(this, function() {
 								if (this.__jsonMode === type.$Modes.Object) {
 									this.__jsonWaitKey = true;
 								} else if (this.__jsonMode === type.$Modes.Array) {
@@ -167,32 +168,32 @@ module.exports = {
 								};
 							}, true),
 							
-							onStartString: new doodad.Callback(this, function() {
+							onStartString: doodad.Callback(this, function() {
 								this.__jsonLevel++;
 								this.__jsonModeStack.push(this.__jsonMode);
 								this.__jsonMode = (this.__jsonWaitKey ? type.$Modes.Key : type.$Modes.String);
 								this.__jsonparserOnValue();
 							}, true),
 							
-							onString: new doodad.Callback(this, function(val) {
+							onString: doodad.Callback(this, function(val) {
 								this.__jsonparserOnValue(val);
 							}, true),
 							
-							onEndString: new doodad.Callback(this, function() {
+							onEndString: doodad.Callback(this, function() {
 								this.__jsonLevel--;
 								this.__jsonparserOnValue();
 								this.__jsonMode = this.__jsonModeStack.pop();
 							}, true),
 							
-							onBoolean: new doodad.Callback(this, function(val) {
+							onBoolean: doodad.Callback(this, function(val) {
 								this.__jsonparserOnValue(val);
 							}, true),
 							
-							onNull: new doodad.Callback(this, function() {
+							onNull: doodad.Callback(this, function() {
 								this.__jsonparserOnValue(null);
 							}, true),
 							
-							onNumber: new doodad.Callback(this, function(val) {
+							onNumber: doodad.Callback(this, function(val) {
 								this.__jsonparserOnValue(val);
 							}, true),
 							
@@ -228,25 +229,44 @@ module.exports = {
 
 					onWrite: doodad.OVERRIDE(function onWrite(ev) {
 						var retval = this._super(ev);
-						if (!ev.prevent) {
-							ev.preventDefault();
 
-							var data = ev.data;
-							if (data.raw === io.EOF) {
-								try {
-									this.__jsonparser.finish();
-									this.push(data, {output: false});
-								} catch(ex) {
-									this.onError(new doodad.ErrorEvent(ex));
-								};
-							} else {
-								try {
-									this.__jsonparser.parse(data.valueOf());
-								} catch(ex) {
-									this.onError(new doodad.ErrorEvent(ex));
-								};
+						var data = ev.data;
+
+						data.consumed = true;		// Will be consumed later
+						ev.preventDefault();
+
+						var aborted = false;
+
+						if (data.raw === io.EOF) {
+							try {
+								this.__jsonparser.finish();
+								var dta = this.transform({raw: io.EOF});
+								this.push(dta, {noEvents: true});
+							} catch(ex) {
+								this.onError(new doodad.ErrorEvent(ex));
+								aborted = true;
+							};
+						} else {
+							try {
+								this.__jsonparser.parse(data.valueOf());
+							} catch(ex) {
+								this.onError(new doodad.ErrorEvent(ex));
+								aborted = true;
 							};
 						};
+
+						if (!aborted) {
+							if (this.options.autoFlush) {
+								this.flush(types.extend({}, this.options.autoFlushOptions, {callback: doodad.Callback(this, function() {
+									data.consumed = false;
+									this.__consumeData(data);
+								})}));
+							} else {
+								data.consumed = false;
+								this.__consumeData(data);
+							};
+						};
+
 						return retval;
 					}),
 				}));
