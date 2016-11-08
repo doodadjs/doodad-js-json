@@ -86,6 +86,7 @@ module.exports = {
 						// TODO: Check MaxSafeInteger for "level"
 						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 						
+						// TODO: Transform
 						var data = {
 							value: value,
 							isOpenClose: (arguments.length === 0),
@@ -96,7 +97,7 @@ module.exports = {
 						};
 						data.raw = data;
 						
-						this.push(data, {noEvents: true});
+						this.push(data);
 					}),
 
 					//create: doodad.OVERRIDE(function create(/*optional*/options) {
@@ -232,39 +233,18 @@ module.exports = {
 
 						var data = ev.data;
 
-						data.consumed = true;		// Will be consumed later
 						ev.preventDefault();
 
-						var aborted = false;
-
 						if (data.raw === io.EOF) {
-							try {
-								this.__jsonparser.finish();
-								var dta = this.transform({raw: io.EOF});
-								this.push(dta, {noEvents: true});
-							} catch(ex) {
-								this.onError(new doodad.ErrorEvent(ex));
-								aborted = true;
-							};
+							this.__jsonparser.finish();
+							var dta = this.transform({raw: io.EOF});
+							this.push(dta);
 						} else {
-							try {
-								this.__jsonparser.parse(data.valueOf());
-							} catch(ex) {
-								this.onError(new doodad.ErrorEvent(ex));
-								aborted = true;
-							};
+							this.__jsonparser.parse(data.valueOf());
 						};
 
-						if (!aborted) {
-							if (this.options.autoFlush) {
-								this.flush(types.extend({}, this.options.autoFlushOptions, {callback: doodad.Callback(this, function() {
-									data.consumed = false;
-									this.__consumeData(data);
-								})}));
-							} else {
-								data.consumed = false;
-								this.__consumeData(data);
-							};
+						if (this.options.flushMode === 'half') {
+							this.flush(this.options.autoFlushOptions);
 						};
 
 						return retval;
