@@ -1,27 +1,27 @@
 //! BEGIN_MODULE()
 
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under WTFPL\n", true)
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
-// File: IO_Json_Loader.js - JSON Parser loader
+// File: IO_Json_Loader.js - JSON Parser Loader (server-side)
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
-// License: WTFPL
+// License: Apache V2
 //
-// DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
-//                    Version 2, December 2004 
+//	Copyright 2016 Claude Petit
 //
-// Copyright (C) 2016 Claude Petit <doodadjs <at> gmail.com> 
+//	Licensed under the Apache License, Version 2.0 (the "License");
+//	you may not use this file except in compliance with the License.
+//	You may obtain a copy of the License at
 //
-// Everyone is permitted to copy and distribute verbatim or modified 
-// copies of this license document, and changing it is allowed as long 
-// as the name is changed. 
+//		http://www.apache.org/licenses/LICENSE-2.0
 //
-//            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
-//   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
-//
-//  0. You just DO WHAT THE FUCK YOU WANT TO.
+//	Unless required by applicable law or agreed to in writing, software
+//	distributed under the License is distributed on an "AS IS" BASIS,
+//	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//	See the License for the specific language governing permissions and
+//	limitations under the License.
 //! END_REPLACE()
 
 module.exports = {
