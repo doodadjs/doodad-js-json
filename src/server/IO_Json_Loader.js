@@ -55,11 +55,11 @@ module.exports = {
 				//});
 					
 
-				ioJsonLoader.getParser = function getParser() {
+				ioJsonLoader.ADD('getParser', function getParser() {
 					const fromSource = root.getOptions().fromSource;
 					const jsonparse = ( fromSource ? require('../../lib/jsonparse/jsonparse.js') : require('../jsonparse.min.js') );
 					return jsonparse.JsonParser;
-				};
+				});
 					
 				
 				//===================================

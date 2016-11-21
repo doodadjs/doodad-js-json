@@ -54,9 +54,9 @@ module.exports = {
 				//});
 					
 
-				ioJsonLoader.getParser = function getParser() {
+				ioJsonLoader.ADD('getParser', function getParser() {
 					return global.JsonParser;
-				};
+				});
 					
 				
 				//===================================
