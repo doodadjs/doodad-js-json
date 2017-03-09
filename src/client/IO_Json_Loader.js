@@ -36,7 +36,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					io = doodad.IO,
 					ioJson = io.Json,
 					ioJsonLoader = ioJson.Loader;
@@ -47,7 +47,7 @@ module.exports = {
 				//===================================
 					
 				//// <FUTURE> Thread context
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 					
 				//types.complete(_shared.Natives, {

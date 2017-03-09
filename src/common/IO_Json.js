@@ -40,7 +40,7 @@ module.exports = {
 				// Get namespaces
 				//===================================
 					
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					io = doodad.IO,
@@ -53,7 +53,7 @@ module.exports = {
 				//===================================
 					
 				//// <FUTURE> Thread context
-				//var __Internal__ = {
+				//const __Internal__ = {
 				//};
 					
 				//types.complete(_shared.Natives, {
@@ -82,13 +82,11 @@ module.exports = {
 					})),
 				
 					__jsonparserOnValue: doodad.PROTECTED(function __jsonparserOnValue(/*optional*/value) {
-						var parser = this.__jsonparser;
-						
 						// TODO: Check MaxSafeInteger for "level"
 						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 						
 						// TODO: Transform
-						var data = {
+						const data = {
 							value: value,
 							isOpenClose: (arguments.length === 0),
 							mode: this.__jsonMode,
@@ -108,8 +106,8 @@ module.exports = {
 					reset: doodad.OVERRIDE(function reset() {
 						// TODO: Validate with a Schema (http://json-schema.org/)
 						
-						var JsonParser = ioJsonLoader.getParser();
-						var type = types.getType(this);
+						const JsonParser = ioJsonLoader.getParser();
+						const type = types.getType(this);
 						this.__jsonparser = new JsonParser({
 							onError: doodad.Callback(this, function(err) {
 								//this.onError(new doodad.ErrorEvent(err));
@@ -230,15 +228,17 @@ module.exports = {
 					}),
 
 					onWrite: doodad.OVERRIDE(function onWrite(ev) {
-						var retval = this._super(ev);
+						const retval = this._super(ev);
 
-						var data = ev.data;
+						const data = ev.data;
 
 						ev.preventDefault();
 
+						let dta;
+
 						if (data.raw === io.EOF) {
 							this.__jsonparser.finish();
-							var dta = this.transform({raw: io.EOF});
+							dta = this.transform({raw: io.EOF});
 							this.push(dta);
 						} else {
 							this.__jsonparser.parse(data.valueOf());
