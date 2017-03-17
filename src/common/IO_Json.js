@@ -85,18 +85,15 @@ module.exports = {
 						// TODO: Check MaxSafeInteger for "level"
 						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 						
-						// TODO: Transform
-						const data = {
+						const raw = {
 							value: value,
 							isOpenClose: (arguments.length === 0),
 							mode: this.__jsonMode,
 							level: this.__jsonLevel,
-							valueOf: function() { return this; },
 							Modes: types.getType(this).$Modes,
 						};
-						data.raw = data;
-						
-						this.push(data);
+
+						this.push(new io.Data(raw));
 					}),
 
 					//create: doodad.OVERRIDE(function create(/*optional*/options) {
@@ -238,14 +235,14 @@ module.exports = {
 
 						if (data.raw === io.EOF) {
 							this.__jsonparser.finish();
-							dta = this.transform({raw: io.EOF});
-							this.push(dta);
+							this.push(new io.Data(io.EOF));
 						} else {
-							this.__jsonparser.parse(data.valueOf());
+							// NOTE: 'parse' is synchronous
+							this.__jsonparser.parse(this.transform(data));
 						};
 
 						if (this.options.flushMode === 'half') {
-							this.flush(this.options.autoFlushOptions);
+							this.flush();
 						};
 
 						return retval;
