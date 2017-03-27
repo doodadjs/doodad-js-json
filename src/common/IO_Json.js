@@ -92,7 +92,7 @@ module.exports = {
 							Modes: types.getType(this).$Modes,
 						};
 
-						this.push(new io.Data(raw));
+						this.submit(new io.Data(raw));
 					}),
 
 					reset: doodad.OVERRIDE(function reset() {
@@ -210,7 +210,7 @@ module.exports = {
 
 						if (data.raw === io.EOF) {
 							this.__jsonparser.finish();
-							this.push(new io.Data(io.EOF));
+							this.submit(new io.Data(io.EOF));
 						} else {
 							// NOTE: 'parse' is synchronous
 							this.__jsonparser.parse(this.transform(data));
