@@ -71,6 +71,7 @@ module.exports = {
 					__jsonWaitKey: doodad.PROTECTED(false),
 					__jsonMode: doodad.PROTECTED(null),
 					__jsonModeStack: doodad.PROTECTED(null),
+					__jsonBuffer: doodad.PROTECTED(null),
 
 					$Modes: doodad.PUBLIC(doodad.TYPE({
 						Value: 0,
@@ -83,16 +84,18 @@ module.exports = {
 					__jsonparserOnValue: doodad.PROTECTED(function __jsonparserOnValue(/*optional*/value) {
 						// TODO: Check MaxSafeInteger for "level"
 						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
+
+						if (!this.__jsonBuffer) {
+							this.__jsonBuffer = [];
+							this.__jsonBuffer.Modes = types.getType(this).$Modes;
+						};
 						
-						const raw = {
+						this.__jsonBuffer.push({
 							value: value,
 							isOpenClose: (arguments.length === 0),
 							mode: this.__jsonMode,
 							level: this.__jsonLevel,
-							Modes: types.getType(this).$Modes,
-						};
-
-						this.submit(new io.Data(raw));
+						});
 					}),
 
 					reset: doodad.OVERRIDE(function reset() {
@@ -102,13 +105,12 @@ module.exports = {
 						const type = types.getType(this);
 						this.__jsonparser = new JsonParser({
 							onError: doodad.Callback(this, function(err) {
-								//this.onError(new doodad.ErrorEvent(err));
+								//this.onError(err);
 								throw err;
 							}, true),
 							
 							onStartObject: doodad.Callback(this, function() {
 								this.__jsonLevel++;
-								// Check MaxSafeInteger for "__jsonModeStack.length"
 								this.__jsonModeStack.push(this.__jsonMode);
 								this.__jsonMode = type.$Modes.Object;
 								this.__jsonWaitKey = true;
@@ -125,7 +127,6 @@ module.exports = {
 							
 							onStartArray: doodad.Callback(this, function() {
 								this.__jsonLevel++;
-								// Check MaxSafeInteger for "__jsonModeStack.length"
 								this.__jsonModeStack.push(this.__jsonMode);
 								this.__jsonMode = type.$Modes.Array;
 								this.__jsonWaitKey = false;
@@ -195,6 +196,7 @@ module.exports = {
 						this.__jsonWaitKey = false;
 						this.__jsonMode = type.$Modes.Value;
 						this.__jsonModeStack = [];
+						this.__jsonBuffer = null;
 						
 						this._super();
 					}),
@@ -206,14 +208,29 @@ module.exports = {
 
 						ev.preventDefault();
 
-						let dta;
-
 						if (data.raw === io.EOF) {
 							this.__jsonparser.finish();
-							this.submit(new io.Data(io.EOF));
+
+							if (this.__jsonBuffer) {
+								this.submit(new io.Data(this.__jsonBuffer), {callback: data.defer()});
+
+								this.__jsonBuffer = null;
+							};
+
+							this.submit(new io.Data(io.EOF), {callback: data.defer()});
+
 						} else {
+							const json = this.transform(data);
+
 							// NOTE: 'parse' is synchronous
-							this.__jsonparser.parse(this.transform(data));
+							this.__jsonparser.parse(json);
+
+							if (this.__jsonBuffer) {
+								// Defer once after submitting all other Data objects (to reduce resources)
+								this.submit(new io.Data(this.__jsonBuffer), {callback: data.defer()});
+							
+								this.__jsonBuffer = null;
+							};
 						};
 
 						return retval;
