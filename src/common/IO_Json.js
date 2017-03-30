@@ -44,6 +44,7 @@ module.exports = {
 					types = doodad.Types,
 					tools = doodad.Tools,
 					io = doodad.IO,
+					ioMixIns = io.MixIns,
 					ioJson = io.Json,
 					ioJsonLoader = ioJson.Loader;
 					
@@ -60,8 +61,9 @@ module.exports = {
 				//});
 					
 				ioJson.REGISTER(io.Stream.$extend(
-									//io.TextInputStream,
-									io.TextOutputStream,
+									io.BufferedTextOutputStream,
+									ioMixIns.TextTransformableIn,
+									ioMixIns.ObjectTransformableOut,
 				{
 					$TYPE_NAME: 'Stream',
 					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Stream')), true) */,
@@ -85,17 +87,13 @@ module.exports = {
 						// TODO: Check MaxSafeInteger for "level"
 						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 
-						if (!this.__jsonBuffer) {
-							this.__jsonBuffer = [];
-							this.__jsonBuffer.Modes = types.getType(this).$Modes;
-						};
-						
-						this.__jsonBuffer.push({
+						this.submit(new io.Data({
 							value: value,
 							isOpenClose: (arguments.length === 0),
 							mode: this.__jsonMode,
 							level: this.__jsonLevel,
-						});
+							Modes: types.getType(this).$Modes,
+						}));
 					}),
 
 					reset: doodad.OVERRIDE(function reset() {
@@ -196,7 +194,6 @@ module.exports = {
 						this.__jsonWaitKey = false;
 						this.__jsonMode = type.$Modes.Value;
 						this.__jsonModeStack = [];
-						this.__jsonBuffer = null;
 						
 						this._super();
 					}),
@@ -211,26 +208,13 @@ module.exports = {
 						if (data.raw === io.EOF) {
 							this.__jsonparser.finish();
 
-							if (this.__jsonBuffer) {
-								this.submit(new io.Data(this.__jsonBuffer), {callback: data.defer()});
-
-								this.__jsonBuffer = null;
-							};
-
-							this.submit(new io.Data(io.EOF), {callback: data.defer()});
+							this.submit(new io.Data(io.EOF));
 
 						} else {
-							const json = this.transform(data);
+							const json = data.toString();
 
 							// NOTE: 'parse' is synchronous
 							this.__jsonparser.parse(json);
-
-							if (this.__jsonBuffer) {
-								// Defer once after submitting all other Data objects (to reduce resources)
-								this.submit(new io.Data(this.__jsonBuffer), {callback: data.defer()});
-							
-								this.__jsonBuffer = null;
-							};
 						};
 
 						return retval;
