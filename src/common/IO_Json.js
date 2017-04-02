@@ -208,7 +208,7 @@ module.exports = {
 						if (data.raw === io.EOF) {
 							this.__jsonparser.finish();
 
-							this.submit(new io.Data(io.EOF));
+							this.submit(new io.Data(io.EOF), {callback: data.defer()});
 
 						} else {
 							const json = data.toString();
