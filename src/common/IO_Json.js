@@ -102,10 +102,9 @@ module.exports = {
 						const JsonParser = ioJsonLoader.getParser();
 						const type = types.getType(this);
 						this.__jsonparser = new JsonParser({
-							onError: doodad.Callback(this, function(err) {
-								//this.onError(err);
+							onError: function(err) {
 								throw err;
-							}, true),
+							},
 							
 							onStartObject: doodad.Callback(this, function() {
 								this.__jsonLevel++;
@@ -144,7 +143,7 @@ module.exports = {
 									this.__jsonWaitKey = false;
 								} else {
 									// Error
-									debugger;
+									throw new Error("Invalid JSON.");
 								};
 							}, true),
 							
@@ -155,7 +154,7 @@ module.exports = {
 									this.__jsonWaitKey = false;
 								} else {
 									// Error
-									debugger;
+									throw new Error("Invalid JSON.");
 								};
 							}, true),
 							
