@@ -74,6 +74,7 @@ module.exports = {
 					__jsonMode: doodad.PROTECTED(null),
 					__jsonModeStack: doodad.PROTECTED(null),
 					__jsonBuffer: doodad.PROTECTED(null),
+					__dataObject: doodad.PROTECTED(null),
 
 					$Modes: doodad.PUBLIC(doodad.TYPE({
 						Value: 0,
@@ -93,7 +94,7 @@ module.exports = {
 							mode: this.__jsonMode,
 							level: this.__jsonLevel,
 							Modes: types.getType(this).$Modes,
-						}));
+						}), {callback: this.__dataObject.defer()});
 					}),
 
 					reset: doodad.OVERRIDE(function reset() {
@@ -193,6 +194,7 @@ module.exports = {
 						this.__jsonWaitKey = false;
 						this.__jsonMode = type.$Modes.Value;
 						this.__jsonModeStack = [];
+						this.__dataObject = null;
 						
 						this._super();
 					}),
@@ -204,7 +206,10 @@ module.exports = {
 
 						ev.preventDefault();
 
+						this.__dataObject = data;
+
 						if (data.raw === io.EOF) {
+							// NOTE: 'finish' is synchronous
 							this.__jsonparser.finish();
 
 							this.submit(new io.Data(io.EOF), {callback: data.defer()});
@@ -215,6 +220,8 @@ module.exports = {
 							// NOTE: 'parse' is synchronous
 							this.__jsonparser.parse(json);
 						};
+
+						this.__dataObject = null;
 
 						return retval;
 					}),
