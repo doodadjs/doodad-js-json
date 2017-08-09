@@ -38,8 +38,8 @@ $ npm install doodad-js-json
   
 ## License
 
-  [WTFPL][license-url]
+  [Apache-2.0][license-url]
 
 [npm-image]: https://img.shields.io/npm/v/doodad-js-json.svg
 [npm-url]: https://npmjs.org/package/doodad-js-json
-[license-url]: http://www.wtfpl.net/
+[license-url]: http://opensource.org/licenses/Apache-2.0
