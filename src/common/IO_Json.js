@@ -74,7 +74,6 @@ module.exports = {
 					__jsonMode: doodad.PROTECTED(null),
 					__jsonModeStack: doodad.PROTECTED(null),
 					__jsonBuffer: doodad.PROTECTED(null),
-					__dataObject: doodad.PROTECTED(null),
 
 					$Modes: doodad.PUBLIC(doodad.TYPE({
 						Value: 0,
@@ -83,25 +82,32 @@ module.exports = {
 						String: 3,
 						Key: 4,
 					})),
-				
-					__jsonparserOnValue: doodad.PROTECTED(function __jsonparserOnValue(/*optional*/value) {
+
+					__appendValue: doodad.PROTECTED(function __appendValue(/*optional*/value) {
 						// TODO: Check MaxSafeInteger for "level"
 						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 
-						this.submit(new io.Data({
+						let buffer = this.__jsonBuffer;
+
+						if (!buffer) {
+							this.__jsonBuffer = buffer = [];
+						};
+
+						buffer.push({
 							value: value,
 							isOpenClose: (arguments.length === 0),
 							mode: this.__jsonMode,
 							level: this.__jsonLevel,
-							Modes: types.getType(this).$Modes,
-						}), {callback: this.__dataObject.defer()});
+						});
 					}),
 
 					reset: doodad.OVERRIDE(function reset() {
 						// TODO: Validate with a Schema (http://json-schema.org/)
 						
 						const JsonParser = ioJsonLoader.getParser();
+
 						const type = types.getType(this);
+
 						this.__jsonparser = new JsonParser({
 							onError: function(err) {
 								throw err;
@@ -112,14 +118,14 @@ module.exports = {
 								this.__jsonModeStack.push(this.__jsonMode);
 								this.__jsonMode = type.$Modes.Object;
 								this.__jsonWaitKey = true;
-								this.__jsonparserOnValue();
+								this.__appendValue();
 							}, true),
 							
 							onEndObject: doodad.Callback(this, function() {
 								this.__jsonLevel--;
 								this.__jsonMode = type.$Modes.Object;
 								this.__jsonWaitKey = false;
-								this.__jsonparserOnValue();
+								this.__appendValue();
 								this.__jsonMode = this.__jsonModeStack.pop();
 							}, true),
 							
@@ -128,14 +134,14 @@ module.exports = {
 								this.__jsonModeStack.push(this.__jsonMode);
 								this.__jsonMode = type.$Modes.Array;
 								this.__jsonWaitKey = false;
-								this.__jsonparserOnValue();
+								this.__appendValue();
 							}, true),
 							
 							onEndArray: doodad.Callback(this, function() {
 								this.__jsonLevel--;
 								this.__jsonMode = type.$Modes.Array;
 								this.__jsonWaitKey = false;
-								this.__jsonparserOnValue();
+								this.__appendValue();
 								this.__jsonMode = this.__jsonModeStack.pop();
 							}, true),
 							
@@ -163,29 +169,29 @@ module.exports = {
 								this.__jsonLevel++;
 								this.__jsonModeStack.push(this.__jsonMode);
 								this.__jsonMode = (this.__jsonWaitKey ? type.$Modes.Key : type.$Modes.String);
-								this.__jsonparserOnValue();
+								this.__appendValue();
 							}, true),
 							
 							onString: doodad.Callback(this, function(val) {
-								this.__jsonparserOnValue(val);
+								this.__appendValue(val);
 							}, true),
 							
 							onEndString: doodad.Callback(this, function() {
 								this.__jsonLevel--;
-								this.__jsonparserOnValue();
+								this.__appendValue();
 								this.__jsonMode = this.__jsonModeStack.pop();
 							}, true),
 							
 							onBoolean: doodad.Callback(this, function(val) {
-								this.__jsonparserOnValue(val);
+								this.__appendValue(val);
 							}, true),
 							
 							onNull: doodad.Callback(this, function() {
-								this.__jsonparserOnValue(null);
+								this.__appendValue(null);
 							}, true),
 							
 							onNumber: doodad.Callback(this, function(val) {
-								this.__jsonparserOnValue(val);
+								this.__appendValue(val);
 							}, true),
 							
 						});
@@ -194,7 +200,7 @@ module.exports = {
 						this.__jsonWaitKey = false;
 						this.__jsonMode = type.$Modes.Value;
 						this.__jsonModeStack = [];
-						this.__dataObject = null;
+						this.__jsonBuffer = null;
 						
 						this._super();
 					}),
@@ -202,18 +208,13 @@ module.exports = {
 					onWrite: doodad.OVERRIDE(function onWrite(ev) {
 						const retval = this._super(ev);
 
-						const data = ev.data;
-
 						ev.preventDefault();
 
-						this.__dataObject = data;
+						const data = ev.data;
 
 						if (data.raw === io.EOF) {
 							// NOTE: 'finish' is synchronous
 							this.__jsonparser.finish();
-
-							this.submit(new io.Data(io.EOF), {callback: data.defer()});
-
 						} else {
 							const json = data.toString();
 
@@ -221,7 +222,19 @@ module.exports = {
 							this.__jsonparser.parse(json);
 						};
 
-						this.__dataObject = null;
+						const buffer = this.__jsonBuffer;
+						if (buffer) {
+							this.__jsonBuffer = null;
+
+							this.submit(new io.Data({
+								buffer: buffer,
+								Modes: types.getType(this).$Modes,
+							}), {callback: data.defer()});
+						};
+
+						if (data.raw === io.EOF) {
+							this.submit(new io.Data(io.EOF), {callback: data.defer()});
+						};
 
 						return retval;
 					}),
