@@ -24,231 +24,230 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.IO.Json'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			dependencies: [
-				'Doodad.IO.Json.Loader',
-			],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.IO.Json'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		dependencies: [
+			'Doodad.IO.Json.Loader',
+		],
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 					
-				const doodad = root.Doodad,
-					types = doodad.Types,
-					tools = doodad.Tools,
-					io = doodad.IO,
-					ioMixIns = io.MixIns,
-					ioJson = io.Json,
-					ioJsonLoader = ioJson.Loader;
+			const doodad = root.Doodad,
+				types = doodad.Types,
+				tools = doodad.Tools,
+				io = doodad.IO,
+				ioMixIns = io.MixIns,
+				ioJson = io.Json,
+				ioJsonLoader = ioJson.Loader;
 					
 					
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 					
-				//// <FUTURE> Thread context
-				//const __Internal__ = {
-				//};
+			//// <FUTURE> Thread context
+			//const __Internal__ = {
+			//};
 					
-				//tools.complete(_shared.Natives, {
-				//});
+			//tools.complete(_shared.Natives, {
+			//});
 					
-				ioJson.REGISTER(io.Stream.$extend(
-									io.BufferedTextOutputStream,
-									ioMixIns.TextTransformableIn,
-									ioMixIns.ObjectTransformableOut,
-				{
-					$TYPE_NAME: 'Stream',
-					$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Stream')), true) */,
+			ioJson.REGISTER(io.Stream.$extend(
+								io.BufferedTextOutputStream,
+								ioMixIns.TextTransformableIn,
+								ioMixIns.ObjectTransformableOut,
+			{
+				$TYPE_NAME: 'Stream',
+				$TYPE_UUID: '' /*! INJECT('+' + TO_SOURCE(UUID('Stream')), true) */,
 
-					__jsonparser: doodad.PROTECTED(null),
-					__jsonLevel: doodad.PROTECTED(0),
-					__jsonWaitKey: doodad.PROTECTED(false),
-					__jsonMode: doodad.PROTECTED(null),
-					__jsonModeStack: doodad.PROTECTED(null),
-					__jsonBuffer: doodad.PROTECTED(null),
+				__jsonparser: doodad.PROTECTED(null),
+				__jsonLevel: doodad.PROTECTED(0),
+				__jsonWaitKey: doodad.PROTECTED(false),
+				__jsonMode: doodad.PROTECTED(null),
+				__jsonModeStack: doodad.PROTECTED(null),
+				__jsonBuffer: doodad.PROTECTED(null),
 
-					$Modes: doodad.PUBLIC(doodad.TYPE({
-						Value: 0,
-						Object: 1,
-						Array: 2,
-						String: 3,
-						Key: 4,
-					})),
+				$Modes: doodad.PUBLIC(doodad.TYPE({
+					Value: 0,
+					Object: 1,
+					Array: 2,
+					String: 3,
+					Key: 4,
+				})),
 
-					__appendValue: doodad.PROTECTED(function __appendValue(/*optional*/value) {
-						// TODO: Check MaxSafeInteger for "level"
-						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
+				__appendValue: doodad.PROTECTED(function __appendValue(/*optional*/value) {
+					// TODO: Check MaxSafeInteger for "level"
+					// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 
-						let buffer = this.__jsonBuffer;
+					let buffer = this.__jsonBuffer;
 
-						if (!buffer) {
-							this.__jsonBuffer = buffer = [];
-						};
+					if (!buffer) {
+						this.__jsonBuffer = buffer = [];
+					};
 
-						buffer.push({
-							value: value,
-							isOpenClose: (arguments.length === 0),
-							mode: this.__jsonMode,
-							level: this.__jsonLevel,
-						});
-					}),
+					buffer.push({
+						value: value,
+						isOpenClose: (arguments.length === 0),
+						mode: this.__jsonMode,
+						level: this.__jsonLevel,
+					});
+				}),
 
-					reset: doodad.OVERRIDE(function reset() {
-						// TODO: Validate with a Schema (http://json-schema.org/)
+				reset: doodad.OVERRIDE(function reset() {
+					// TODO: Validate with a Schema (http://json-schema.org/)
 						
-						const JsonParser = ioJsonLoader.getParser();
+					const JsonParser = ioJsonLoader.getParser();
 
-						const type = types.getType(this);
+					const type = types.getType(this);
 
-						this.__jsonparser = new JsonParser({
-							onError: function(err) {
-								throw err;
-							},
+					this.__jsonparser = new JsonParser({
+						onError: function(err) {
+							throw err;
+						},
 							
-							onStartObject: doodad.Callback(this, function() {
-								this.__jsonLevel++;
-								this.__jsonModeStack.push(this.__jsonMode);
-								this.__jsonMode = type.$Modes.Object;
+						onStartObject: doodad.Callback(this, function() {
+							this.__jsonLevel++;
+							this.__jsonModeStack.push(this.__jsonMode);
+							this.__jsonMode = type.$Modes.Object;
+							this.__jsonWaitKey = true;
+							this.__appendValue();
+						}, true),
+							
+						onEndObject: doodad.Callback(this, function() {
+							this.__jsonLevel--;
+							this.__jsonMode = type.$Modes.Object;
+							this.__jsonWaitKey = false;
+							this.__appendValue();
+							this.__jsonMode = this.__jsonModeStack.pop();
+						}, true),
+							
+						onStartArray: doodad.Callback(this, function() {
+							this.__jsonLevel++;
+							this.__jsonModeStack.push(this.__jsonMode);
+							this.__jsonMode = type.$Modes.Array;
+							this.__jsonWaitKey = false;
+							this.__appendValue();
+						}, true),
+							
+						onEndArray: doodad.Callback(this, function() {
+							this.__jsonLevel--;
+							this.__jsonMode = type.$Modes.Array;
+							this.__jsonWaitKey = false;
+							this.__appendValue();
+							this.__jsonMode = this.__jsonModeStack.pop();
+						}, true),
+							
+						onColon: doodad.Callback(this, function() {
+							if (this.__jsonWaitKey && (this.__jsonMode === type.$Modes.Object)) {
+								this.__jsonWaitKey = false;
+							} else {
+								// Error
+								throw new Error("Invalid JSON.");
+							};
+						}, true),
+							
+						onComma: doodad.Callback(this, function() {
+							if (this.__jsonMode === type.$Modes.Object) {
 								this.__jsonWaitKey = true;
-								this.__appendValue();
-							}, true),
-							
-							onEndObject: doodad.Callback(this, function() {
-								this.__jsonLevel--;
-								this.__jsonMode = type.$Modes.Object;
+							} else if (this.__jsonMode === type.$Modes.Array) {
 								this.__jsonWaitKey = false;
-								this.__appendValue();
-								this.__jsonMode = this.__jsonModeStack.pop();
-							}, true),
+							} else {
+								// Error
+								throw new Error("Invalid JSON.");
+							};
+						}, true),
 							
-							onStartArray: doodad.Callback(this, function() {
-								this.__jsonLevel++;
-								this.__jsonModeStack.push(this.__jsonMode);
-								this.__jsonMode = type.$Modes.Array;
-								this.__jsonWaitKey = false;
-								this.__appendValue();
-							}, true),
+						onStartString: doodad.Callback(this, function() {
+							this.__jsonLevel++;
+							this.__jsonModeStack.push(this.__jsonMode);
+							this.__jsonMode = (this.__jsonWaitKey ? type.$Modes.Key : type.$Modes.String);
+							this.__appendValue();
+						}, true),
 							
-							onEndArray: doodad.Callback(this, function() {
-								this.__jsonLevel--;
-								this.__jsonMode = type.$Modes.Array;
-								this.__jsonWaitKey = false;
-								this.__appendValue();
-								this.__jsonMode = this.__jsonModeStack.pop();
-							}, true),
+						onString: doodad.Callback(this, function(val) {
+							this.__appendValue(val);
+						}, true),
 							
-							onColon: doodad.Callback(this, function() {
-								if (this.__jsonWaitKey && (this.__jsonMode === type.$Modes.Object)) {
-									this.__jsonWaitKey = false;
-								} else {
-									// Error
-									throw new Error("Invalid JSON.");
-								};
-							}, true),
+						onEndString: doodad.Callback(this, function() {
+							this.__jsonLevel--;
+							this.__appendValue();
+							this.__jsonMode = this.__jsonModeStack.pop();
+						}, true),
 							
-							onComma: doodad.Callback(this, function() {
-								if (this.__jsonMode === type.$Modes.Object) {
-									this.__jsonWaitKey = true;
-								} else if (this.__jsonMode === type.$Modes.Array) {
-									this.__jsonWaitKey = false;
-								} else {
-									// Error
-									throw new Error("Invalid JSON.");
-								};
-							}, true),
+						onBoolean: doodad.Callback(this, function(val) {
+							this.__appendValue(val);
+						}, true),
 							
-							onStartString: doodad.Callback(this, function() {
-								this.__jsonLevel++;
-								this.__jsonModeStack.push(this.__jsonMode);
-								this.__jsonMode = (this.__jsonWaitKey ? type.$Modes.Key : type.$Modes.String);
-								this.__appendValue();
-							}, true),
+						onNull: doodad.Callback(this, function() {
+							this.__appendValue(null);
+						}, true),
 							
-							onString: doodad.Callback(this, function(val) {
-								this.__appendValue(val);
-							}, true),
+						onNumber: doodad.Callback(this, function(val) {
+							this.__appendValue(val);
+						}, true),
 							
-							onEndString: doodad.Callback(this, function() {
-								this.__jsonLevel--;
-								this.__appendValue();
-								this.__jsonMode = this.__jsonModeStack.pop();
-							}, true),
-							
-							onBoolean: doodad.Callback(this, function(val) {
-								this.__appendValue(val);
-							}, true),
-							
-							onNull: doodad.Callback(this, function() {
-								this.__appendValue(null);
-							}, true),
-							
-							onNumber: doodad.Callback(this, function(val) {
-								this.__appendValue(val);
-							}, true),
-							
-						});
+					});
 						
-						this.__jsonLevel = 0;
-						this.__jsonWaitKey = false;
-						this.__jsonMode = type.$Modes.Value;
-						this.__jsonModeStack = [];
+					this.__jsonLevel = 0;
+					this.__jsonWaitKey = false;
+					this.__jsonMode = type.$Modes.Value;
+					this.__jsonModeStack = [];
+					this.__jsonBuffer = null;
+						
+					this._super();
+				}),
+
+				onWrite: doodad.OVERRIDE(function onWrite(ev) {
+					const retval = this._super(ev);
+
+					ev.preventDefault();
+
+					const data = ev.data;
+
+					if (data.raw === io.EOF) {
+						// NOTE: 'finish' is synchronous
+						this.__jsonparser.finish();
+					} else {
+						const json = data.toString();
+
+						// NOTE: 'parse' is synchronous
+						this.__jsonparser.parse(json);
+					};
+
+					const buffer = this.__jsonBuffer;
+					if (buffer) {
 						this.__jsonBuffer = null;
-						
-						this._super();
-					}),
 
-					onWrite: doodad.OVERRIDE(function onWrite(ev) {
-						const retval = this._super(ev);
+						this.submit(new io.Data({
+							buffer: buffer,
+							Modes: types.getType(this).$Modes,
+						}), {callback: data.defer()});
+					};
 
-						ev.preventDefault();
+					if (data.raw === io.EOF) {
+						this.submit(new io.Data(io.EOF), {callback: data.defer()});
+					};
 
-						const data = ev.data;
-
-						if (data.raw === io.EOF) {
-							// NOTE: 'finish' is synchronous
-							this.__jsonparser.finish();
-						} else {
-							const json = data.toString();
-
-							// NOTE: 'parse' is synchronous
-							this.__jsonparser.parse(json);
-						};
-
-						const buffer = this.__jsonBuffer;
-						if (buffer) {
-							this.__jsonBuffer = null;
-
-							this.submit(new io.Data({
-								buffer: buffer,
-								Modes: types.getType(this).$Modes,
-							}), {callback: data.defer()});
-						};
-
-						if (data.raw === io.EOF) {
-							this.submit(new io.Data(io.EOF), {callback: data.defer()});
-						};
-
-						return retval;
-					}),
-				}));
+					return retval;
+				}),
+			}));
 
 				
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

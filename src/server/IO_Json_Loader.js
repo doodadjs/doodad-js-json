@@ -24,52 +24,51 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES['Doodad.IO.Json.Loader'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = (DD_MODULES || {});
+	DD_MODULES['Doodad.IO.Json.Loader'] = {
+		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
+		create: function create(root, /*optional*/_options, _shared) {
+			"use strict";
 
-				//===================================
-				// Get namespaces
-				//===================================
+			//===================================
+			// Get namespaces
+			//===================================
 					
-				const doodad = root.Doodad,
-					nodejs = doodad.NodeJs,
-					io = doodad.IO,
-					ioJson = io.Json,
-					ioJsonLoader = ioJson.Loader;
+			const doodad = root.Doodad,
+				nodejs = doodad.NodeJs,
+				io = doodad.IO,
+				ioJson = io.Json,
+				ioJsonLoader = ioJson.Loader;
 					
 					
-				//===================================
-				// Internal
-				//===================================
+			//===================================
+			// Internal
+			//===================================
 					
-				//// <FUTURE> Thread context
-				//const __Internal__ = {
-				//};
+			//// <FUTURE> Thread context
+			//const __Internal__ = {
+			//};
 					
-				//tools.complete(_shared.Natives, {
-				//});
+			//tools.complete(_shared.Natives, {
+			//});
 					
 
-				ioJsonLoader.ADD('getParser', function getParser() {
-					const fromSource = root.getOptions().fromSource;
-					const jsonparse = ( fromSource ? require('../../lib/jsonparse/jsonparse.js') : require('../jsonparse.min.js') );
-					return jsonparse.JsonParser;
-				});
+			ioJsonLoader.ADD('getParser', function getParser() {
+				const fromSource = root.getOptions().fromSource;
+				const jsonparse = ( fromSource ? require('../../lib/jsonparse/jsonparse.js') : require('../jsonparse.min.js') );
+				return jsonparse.JsonParser;
+			});
 					
 				
-				//===================================
-				// Init
-				//===================================
-				//return function init(/*optional*/options) {
-				//};
-			},
-		};
-		return DD_MODULES;
-	},
+			//===================================
+			// Init
+			//===================================
+			//return function init(/*optional*/options) {
+			//};
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()
