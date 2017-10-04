@@ -59,66 +59,68 @@
 			"browserify": true
 		}
 	],
-	"tasks": {
-		"make": {
-			"operations": [
-				{
-					"class": "Make.Generate.Package"
-				},
+  "tasks": {
+    "jsonparse": {
+      "operations": [
+        {
+          "class": "Make.File.Javascript",
+          "source": "%PACKAGEDIR%/lib/jsonparse/jsonparse.js",
+          "destination": "%PACKAGEDIR%/lib/jsonparse/jsonparse.min.js",
+          "runDirectives": false
+        }
+      ]
+    },
+    "make": {
+      "operations": [
+        {
+          "class": "Make.Generate.Package"
+        },
 
-				{
-					"class": "Make.File.Javascript",
-					"source": "%PACKAGEDIR%/lib/jsonparse/jsonparse.js",
-					"destination": "%BUILDDIR%/jsonparse.min.js",
-					"runDirectives": false
-				},
+        {
+          "class": "Make.Task",
+          "name": "install"
+        },
+        {
+          "class": "Make.Task",
+          "name": "browserify"
+        },
+        {
+          "class": "Make.Task",
+          "name": "webpack"
+        }
+      ]
+    },
+    "install": {
+      "operations": [
+        {
+          "class": "Make.Generate.Package"
+        },
 
-				{
-					"class": "Make.Task",
-					"name": "install"
-				},
-				{
-					"class": "Make.Task",
-					"name": "browserify"
-				},
-				{
-					"class": "Make.Task",
-					"name": "webpack"
-				}
-			]
-		},
-		"install": {
-			"operations": [
-				{
-					"class": "Make.Generate.Package"
-				},
-				
-				{
-					"class": "Make.File.Copy",
-					"source": "%PACKAGEDIR%/lib/jsonparse/jsonparse.js",
-					"destination": "%INSTALLDIR%/%PACKAGENAME%/jsonparse.js"
-				},
-				{
-					"class": "Make.File.Javascript",
-					"source": "%PACKAGEDIR%/lib/jsonparse/jsonparse.js",
-					"destination": "%INSTALLDIR%/%PACKAGENAME%/jsonparse.min.js",
-					"runDirectives": false
-				}
-			]
-		},
-		"browserify": {
-			"operations": [
-				{
-					"class": "Make.Generate.Package"
-				}
-			]
-		},
-		"webpack": {
-			"operations": [
-				{
-					"class": "Make.Generate.Package"
-				}
-			]
-		}
-	}
+        {
+          "class": "Make.File.Copy",
+          "source": "%PACKAGEDIR%/lib/jsonparse/jsonparse.js",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/jsonparse/jsonparse.js"
+        },
+        {
+          "class": "Make.File.Copy",
+          "source": "%PACKAGEDIR%/lib/jsonparse/jsonparse.min.js",
+          "destination": "%INSTALLDIR%/%PACKAGENAME%/lib/jsonparse/jsonparse.min.js"
+        }
+      ]
+    },
+    "browserify": {
+      "operations": [
+        {
+          "class": "Make.Generate.Package"
+        }
+      ]
+    },
+    "webpack": {
+      "operations": [
+        {
+          "class": "Make.Generate.Package"
+        }
+      ]
+    }
+  }
 }

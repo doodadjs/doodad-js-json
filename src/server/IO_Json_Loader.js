@@ -24,6 +24,16 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+
+//! IF_SET("mjs")
+	//! INJECT("import {default as jsonparse} from 'doodad-js-json/lib/jsonparse/jsonparse.min.js';")
+//! ELSE()
+	const jsonparse = require('doodad-js-json/lib/jsonparse/jsonparse.min.js');
+//! END_IF()
+
+const jsonparseJsonParser = jsonparse.JsonParser;
+
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
 	DD_MODULES['Doodad.IO.Json.Loader'] = {
@@ -55,9 +65,7 @@ exports.add = function add(DD_MODULES) {
 					
 
 			ioJsonLoader.ADD('getParser', function getParser() {
-				const fromSource = root.getOptions().fromSource;
-				const jsonparse = ( fromSource ? require('../../lib/jsonparse/jsonparse.js') : require('../jsonparse.min.js') );
-				return jsonparse.JsonParser;
+				return jsonparseJsonParser;
 			});
 					
 				
