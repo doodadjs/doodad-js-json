@@ -1,5 +1,5 @@
 {
-  "name": "doodad-js-json",
+  "name": "@doodad-js/json",
   "description": "JSON Parser",
   "version": "0.0.0",
   "files": [

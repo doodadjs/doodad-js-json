@@ -26,9 +26,9 @@
 
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as jsonparse} from 'doodad-js-json/lib/jsonparse/jsonparse.min.js';")
+	//! INJECT("import {default as jsonparse} from '@doodad-js/json/lib/jsonparse/jsonparse.min.js';")
 //! ELSE()
-	const jsonparse = require('doodad-js-json/lib/jsonparse/jsonparse.min.js');
+	const jsonparse = require('@doodad-js/json/lib/jsonparse/jsonparse.min.js');
 //! END_IF()
 
 const jsonparseJsonParser = jsonparse.JsonParser;
