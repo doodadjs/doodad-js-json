@@ -41,7 +41,7 @@ exports.add = function add(DD_MODULES) {
 					
 			const doodad = root.Doodad,
 				types = doodad.Types,
-				tools = doodad.Tools,
+				//tools = doodad.Tools,
 				io = doodad.IO,
 				ioMixIns = io.MixIns,
 				ioJson = io.Json,
@@ -108,7 +108,7 @@ exports.add = function add(DD_MODULES) {
 					const type = types.getType(this);
 
 					this.__jsonparser = new JsonParser({
-						onError: function(err) {
+						onError: function onError(err) {
 							throw err;
 						},
 							
