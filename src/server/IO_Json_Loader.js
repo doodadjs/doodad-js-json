@@ -28,6 +28,8 @@
 //! IF_SET("mjs")
 	//! INJECT("import {default as jsonparse} from '@doodad-js/json/lib/jsonparse/jsonparse.min.js';")
 //! ELSE()
+	"use strict";
+
 	/* eslint import/no-extraneous-dependencies: "off" */  // We self-require the package to reach its root.
 	const jsonparse = require('@doodad-js/json/lib/jsonparse/jsonparse.min.js');
 //! END_IF()
@@ -40,8 +42,6 @@ exports.add = function add(DD_MODULES) {
 	DD_MODULES['Doodad.IO.Json.Loader'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			//===================================
 			// Get namespaces
 			//===================================
