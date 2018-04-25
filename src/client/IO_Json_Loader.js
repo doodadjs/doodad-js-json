@@ -37,30 +37,30 @@ exports.add = function add(modules) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				io = doodad.IO,
 				ioJson = io.Json,
 				ioJsonLoader = ioJson.Loader;
-					
-					
+
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			//// <FUTURE> Thread context
 			//const __Internal__ = {
 			//};
-					
+
 			//tools.complete(_shared.Natives, {
 			//});
-					
+
 
 			ioJsonLoader.ADD('getParser', function getParser() {
 				return global.JsonParser;
 			});
-					
-				
+
+
 			//===================================
 			// Init
 			//===================================

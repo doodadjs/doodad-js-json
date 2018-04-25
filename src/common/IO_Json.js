@@ -36,12 +36,12 @@ exports.add = function add(modules) {
 		dependencies: [
 			'Doodad.IO.Json.Loader',
 		],
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				//tools = doodad.Tools,
@@ -49,19 +49,19 @@ exports.add = function add(modules) {
 				ioMixIns = io.MixIns,
 				ioJson = io.Json,
 				ioJsonLoader = ioJson.Loader;
-					
-					
+
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			//// <FUTURE> Thread context
 			//const __Internal__ = {
 			//};
-					
+
 			//tools.complete(_shared.Natives, {
 			//});
-					
+
 			ioJson.REGISTER(io.Stream.$extend(
 								io.BufferedTextOutputStream,
 								ioMixIns.TextTransformableIn,
@@ -105,7 +105,7 @@ exports.add = function add(modules) {
 
 				reset: doodad.OVERRIDE(function reset() {
 					// TODO: Validate with a Schema (http://json-schema.org/)
-						
+
 					const JsonParser = ioJsonLoader.getParser();
 
 					const type = types.getType(this);
@@ -114,7 +114,7 @@ exports.add = function add(modules) {
 						onError: function onError(err) {
 							throw err;
 						},
-							
+
 						onStartObject: doodad.Callback(this, function() {
 							this.__jsonLevel++;
 							this.__jsonModeStack.push(this.__jsonMode);
@@ -122,7 +122,7 @@ exports.add = function add(modules) {
 							this.__jsonWaitKey = true;
 							this.__appendValue();
 						}, true),
-							
+
 						onEndObject: doodad.Callback(this, function() {
 							this.__jsonLevel--;
 							this.__jsonMode = type.$Modes.Object;
@@ -130,7 +130,7 @@ exports.add = function add(modules) {
 							this.__appendValue();
 							this.__jsonMode = this.__jsonModeStack.pop();
 						}, true),
-							
+
 						onStartArray: doodad.Callback(this, function() {
 							this.__jsonLevel++;
 							this.__jsonModeStack.push(this.__jsonMode);
@@ -138,7 +138,7 @@ exports.add = function add(modules) {
 							this.__jsonWaitKey = false;
 							this.__appendValue();
 						}, true),
-							
+
 						onEndArray: doodad.Callback(this, function() {
 							this.__jsonLevel--;
 							this.__jsonMode = type.$Modes.Array;
@@ -146,7 +146,7 @@ exports.add = function add(modules) {
 							this.__appendValue();
 							this.__jsonMode = this.__jsonModeStack.pop();
 						}, true),
-							
+
 						onColon: doodad.Callback(this, function() {
 							if (this.__jsonWaitKey && (this.__jsonMode === type.$Modes.Object)) {
 								this.__jsonWaitKey = false;
@@ -155,7 +155,7 @@ exports.add = function add(modules) {
 								throw new Error("Invalid JSON.");
 							};
 						}, true),
-							
+
 						onComma: doodad.Callback(this, function() {
 							if (this.__jsonMode === type.$Modes.Object) {
 								this.__jsonWaitKey = true;
@@ -166,44 +166,44 @@ exports.add = function add(modules) {
 								throw new Error("Invalid JSON.");
 							};
 						}, true),
-							
+
 						onStartString: doodad.Callback(this, function() {
 							this.__jsonLevel++;
 							this.__jsonModeStack.push(this.__jsonMode);
 							this.__jsonMode = (this.__jsonWaitKey ? type.$Modes.Key : type.$Modes.String);
 							this.__appendValue();
 						}, true),
-							
+
 						onString: doodad.Callback(this, function(val) {
 							this.__appendValue(val);
 						}, true),
-							
+
 						onEndString: doodad.Callback(this, function() {
 							this.__jsonLevel--;
 							this.__appendValue();
 							this.__jsonMode = this.__jsonModeStack.pop();
 						}, true),
-							
+
 						onBoolean: doodad.Callback(this, function(val) {
 							this.__appendValue(val);
 						}, true),
-							
+
 						onNull: doodad.Callback(this, function() {
 							this.__appendValue(null);
 						}, true),
-							
+
 						onNumber: doodad.Callback(this, function(val) {
 							this.__appendValue(val);
 						}, true),
-							
+
 					});
-						
+
 					this.__jsonLevel = 0;
 					this.__jsonWaitKey = false;
 					this.__jsonMode = type.$Modes.Value;
 					this.__jsonModeStack = [];
 					this.__jsonBuffer = null;
-						
+
 					this._super();
 				}),
 
@@ -242,7 +242,7 @@ exports.add = function add(modules) {
 				}),
 			}));
 
-				
+
 			//===================================
 			// Init
 			//===================================
