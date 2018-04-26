@@ -92,7 +92,8 @@ exports.add = function add(modules) {
 						let buffer = this.__jsonBuffer;
 
 						if (!buffer) {
-							this.__jsonBuffer = buffer = [];
+							buffer = [];
+							this.__jsonBuffer = buffer;
 						};
 
 						buffer.push({
