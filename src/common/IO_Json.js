@@ -86,8 +86,8 @@ exports.add = function add(modules) {
 					})),
 
 					__appendValue: doodad.PROTECTED(function __appendValue(/*optional*/value) {
-					// TODO: Check MaxSafeInteger for "level"
-					// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
+						// TODO: Check MaxSafeInteger for "level"
+						// TODO: Combine extracted datas from a chunk of 15K (Node.js's default) to a single "push" call in an Array so that we don't need a buffer size of 100000 !
 
 						let buffer = this.__jsonBuffer;
 
@@ -105,7 +105,7 @@ exports.add = function add(modules) {
 					}),
 
 					reset: doodad.OVERRIDE(function reset() {
-					// TODO: Validate with a Schema (http://json-schema.org/)
+						// TODO: Validate with a Schema (http://json-schema.org/)
 
 						const JsonParser = ioJsonLoader.getParser();
 
@@ -152,7 +152,7 @@ exports.add = function add(modules) {
 								if (this.__jsonWaitKey && (this.__jsonMode === type.$Modes.Object)) {
 									this.__jsonWaitKey = false;
 								} else {
-								// Error
+									// Error
 									throw new Error("Invalid JSON.");
 								};
 							}, true),
@@ -163,7 +163,7 @@ exports.add = function add(modules) {
 								} else if (this.__jsonMode === type.$Modes.Array) {
 									this.__jsonWaitKey = false;
 								} else {
-								// Error
+									// Error
 									throw new Error("Invalid JSON.");
 								};
 							}, true),
@@ -216,7 +216,7 @@ exports.add = function add(modules) {
 						const data = ev.data;
 
 						if (data.raw === io.EOF) {
-						// NOTE: 'finish' is synchronous
+							// NOTE: 'finish' is synchronous
 							this.__jsonparser.finish();
 						} else {
 							const json = data.toString();
