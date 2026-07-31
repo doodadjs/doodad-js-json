@@ -31,7 +31,7 @@
 	"use strict";
 
 	/* eslint import/no-extraneous-dependencies: "off" */  // We self-require the package to reach its root.
-	const jsonparse = require('@doodad-js/json/lib/jsonparse/jsonparse.min.js');
+	const jsonparse = require('@doodad-js/json/lib/jsonparse/jsonparse.min');
 //! END_IF()
 
 const jsonparseJsonParser = jsonparse.JsonParser;
